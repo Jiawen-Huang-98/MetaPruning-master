@@ -26,10 +26,10 @@ parser.add_argument('--learning_rate', type=float, default=0.25, help='init lear
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
 parser.add_argument('--weight_decay', type=float, default=4e-5, help='weight decay')
 parser.add_argument('--save', type=str, default='./models', help='path for saving trained models')
-parser.add_argument('--data', metavar='DIR', help='path to dataset')
+parser.add_argument('--data', metavar='DIR', default = './data/cifar.python',help='path to dataset')
 parser.add_argument('--label_smooth', type=float, default=0.1, help='label smoothing')
 parser.add_argument('--print_freq', type=float, default=1, help='report frequency')
-parser.add_argument('-j', '--workers', default=40, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=2, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 args = parser.parse_args()
 
@@ -95,38 +95,38 @@ def main():
         scheduler.step()
 
     # Data loading code
-    traindir = os.path.join(args.data, 'train')
-    valdir = os.path.join(args.data, 'val')
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+    # traindir = os.path.join(args.data, 'train')
+    # valdir = os.path.join(args.data, 'val')
+    # normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+    #                                  std=[0.229, 0.224, 0.225])
 
 
 
-    crop_scale = 0.08
-    lighting_param = 0.1
-    train_transforms = transforms.Compose([
-        transforms.RandomResizedCrop(224, scale=(crop_scale, 1.0)),
-        Lighting(lighting_param),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        normalize])
+    # crop_scale = 0.08
+    # lighting_param = 0.1
+    # train_transforms = transforms.Compose([
+    #     transforms.RandomResizedCrop(224, scale=(crop_scale, 1.0)),
+    #     Lighting(lighting_param),
+    #     transforms.RandomHorizontalFlip(),
+    #     transforms.ToTensor(),
+    #     normalize])
 
-    train_dataset = datasets.ImageFolder(
-        traindir,
-        transform=train_transforms)
-
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True,
-        num_workers=args.workers, pin_memory=True)
-    val_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder(valdir, transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            normalize,
-        ])),
-        batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True)
+    # train_dataset = datasets.ImageFolder(
+    #     traindir,
+    #     transform=train_transforms)
+    #
+    # train_loader = torch.utils.data.DataLoader(
+    #     train_dataset, batch_size=args.batch_size, shuffle=True,
+    #     num_workers=args.workers, pin_memory=True)
+    # val_loader = torch.utils.data.DataLoader(
+    #     datasets.ImageFolder(valdir, transforms.Compose([
+    #         transforms.Resize(256),
+    #         transforms.CenterCrop(224),
+    #         transforms.ToTensor(),
+    #         normalize,
+    #     ])),
+    #     batch_size=args.batch_size, shuffle=False,
+    #     num_workers=args.workers, pin_memory=True)
 
     # 数据集修改为cifar10
     mean = [x / 255 for x in [125.3, 123.0, 113.9]]
@@ -140,8 +140,8 @@ def main():
         [transforms.ToTensor(),  # 数据格式转换成tensor
          transforms.Normalize(mean, std)])  # 同正则化
 
-    train_data = dset.CIFAR10(args.data_path, train = True, transform = train_transform, download = True)
-    test_data = dset.CIFAR10(args.data_path, train = False, transform = test_transform, download = True)
+    train_data = dset.CIFAR10(args.data, train = True, transform = train_transform, download = True)
+    test_data = dset.CIFAR10(args.data, train = False, transform = test_transform, download = True)
     num_classes = 10
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True,
                                                  num_workers=args.workers, pin_memory=True)  # 数据加载器

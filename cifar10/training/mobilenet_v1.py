@@ -7,7 +7,7 @@ from torch.nn import init
 import math
 
 import numpy as np
-
+# 生成包含30个元素的序列（表示通道的规模）
 channel_scale = []
 for i in range(31):
     channel_scale += [(10 + i * 3)/100]
@@ -93,9 +93,11 @@ class dw3x3_pw1x1(nn.Module):
 
         scale_tensor = torch.FloatTensor([inp_scale/self.max_scale, oup_scale/self.max_scale]).to(x.device)
 
+        # 生成DCov卷积层的权重
         fc11_out = F.relu(self.fc11(scale_tensor))
         depconv3x3_weight = self.fc12(fc11_out).view(self.max_inp_channel, 1, 3, 3)
 
+        # 生成WCov卷积层的权重
         fc21_out = F.relu(self.fc21(scale_tensor))
         conv1x1_weight = self.fc22(fc21_out).view(self.max_oup_channel, self.max_inp_channel, 1, 1)
 
@@ -126,8 +128,8 @@ class MobileNetV1(nn.Module):
         self.feature.append(dw3x3_pw1x1(512, 1024, 2))
         self.feature.append(dw3x3_pw1x1(1024, 1024, 1))
 
-        self.pool1 = nn.AvgPool2d(7)
-        self.fc = nn.Linear(1024, 1000)
+        self.pool1 = nn.AvgPool2d(1)
+        self.fc = nn.Linear(1024, 10)
 
     def forward(self, x, rngs):
 

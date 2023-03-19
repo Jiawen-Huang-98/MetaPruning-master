@@ -14,7 +14,7 @@ import torch.distributed as dist
 import torch.utils.data.distributed
 
 sys.path.append("../../")
-from utils.utils import *
+from ...utils.utils import *
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 from resnet import ResNet50, channel_scale
