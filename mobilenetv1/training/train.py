@@ -86,13 +86,13 @@ def main():
     checkpoint_tar = os.path.join(args.save, 'checkpoint.pth.tar')
     if os.path.exists(checkpoint_tar):
         logging.info('loading checkpoint {} ..........'.format(checkpoint_tar))
-        checkpoint = torch.load(checkpoint_tar)
+        checkpoint = torch.loschedulerd(checkpoint_tar)
         start_epoch = checkpoint['epoch']
         best_top1_acc = checkpoint['best_top1_acc']
         model.load_state_dict(checkpoint['state_dict'])
         logging.info("loaded checkpoint {} epoch = {}" .format(checkpoint_tar, checkpoint['epoch']))
-    for epoch in range(start_epoch):
-        scheduler.step()
+    # for epoch in range(start_epoch):
+    #     scheduler.step()
 
     # Data loading code
     traindir = os.path.join(args.data, 'train')

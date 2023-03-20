@@ -14,7 +14,7 @@ import torch.distributed as dist
 import torch.utils.data.distributed
 
 sys.path.append("../../")
-from ...utils.utils import *
+from utils.utils import *
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 from mobilenet_v1 import MobileNetV1, channel_scale
@@ -65,20 +65,30 @@ def main():
     criterion_smooth = CrossEntropyLabelSmooth(CLASSES, args.label_smooth)
     criterion_smooth = criterion_smooth.cuda()
 
-    all_parameters = model.parameters()
-    weight_parameters = []
-    for pname, p in model.named_parameters():
-        if 'fc' in pname or 'conv1' in pname or 'pwconv' in pname:
-            weight_parameters.append(p)
-    weight_parameters_id = list(map(id, weight_parameters))
-    other_parameters = list(filter(lambda p: id(p) not in weight_parameters_id, all_parameters))
+    #源码的参数优化器
+    # all_parameters = model.parameters()
+    # weight_parameters = []
+    # for pname, p in model.named_parameters():
+    #     if 'fc' in pname or 'conv1' in pname or 'pwconv' in pname:
+    #         weight_parameters.append(p)
+    # # 生成权重参数的地址（ID），此部分只包含全连接，常规卷积和DW卷积
+    # weight_parameters_id = list(map(id, weight_parameters))
+    # # 生成其他参数地址，BN层
+    # other_parameters = list(filter(lambda p: id(p) not in weight_parameters_id, all_parameters))
+    # print(weight_parameters_id)
+    # print(other_parameters)
+    # optimizer = torch.optim.SGD(
+    #     [{'params' : other_parameters},
+    #     {'params' : weight_parameters, 'weight_decay' : args.weight_decay}],
+    #     args.learning_rate,
+    #     momentum=args.momentum,
+    #     )
 
-    optimizer = torch.optim.SGD(
-        [{'params' : other_parameters},
-        {'params' : weight_parameters, 'weight_decay' : args.weight_decay}],
-        args.learning_rate,
-        momentum=args.momentum,
-        )
+    #修改后的参数优化器
+    optimizer = torch.optim.SGD(model.parameters(), args.learning_rate, momentum = args.momentum,
+                                weight_decay = args.weigth_decay, nesterov = True)  # 优化器
+
+
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda step : (1.0-step/args.epochs), last_epoch=-1)
     start_epoch = 0
@@ -188,14 +198,15 @@ def train(epoch, train_loader, model, criterion, optimizer, scheduler):
 
     model.train()
     end = time.time()
-    scheduler.step()
 
+    print("lr of epoch:",scheduler.get_last_lr() )
     for i, (images, target) in enumerate(train_loader):
       data_time.update(time.time() - end)
       images = images.cuda()
       target = target.cuda()
 
       # compute output
+      # 生成结构参数
       scale_ids = np.random.randint(low=0, high=len(channel_scale), size=13)
       logits = model(images, scale_ids)
       loss = criterion(logits, target)
@@ -211,6 +222,13 @@ def train(epoch, train_loader, model, criterion, optimizer, scheduler):
       optimizer.zero_grad()
       loss.backward()
       optimizer.step()
+      scheduler.step()
+      if epoch != 0 and epoch % 15 == 0:
+          args.learning_rate /= 2
+          print(args.learning_rate)
+      for param_group in optimizer.param_groups:
+          param_group["lr"] = args.learning_rate
+
 
       # measure elapsed time
       batch_time.update(time.time() - end)

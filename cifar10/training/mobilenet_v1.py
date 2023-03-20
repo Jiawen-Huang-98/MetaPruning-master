@@ -128,7 +128,7 @@ class MobileNetV1(nn.Module):
         self.feature.append(dw3x3_pw1x1(512, 1024, 2))
         self.feature.append(dw3x3_pw1x1(1024, 1024, 1))
 
-        self.pool1 = nn.AvgPool2d(1)
+        self.pool1 = nn.AvgPool2d(7)
         self.fc = nn.Linear(1024, 10)
 
     def forward(self, x, rngs):
