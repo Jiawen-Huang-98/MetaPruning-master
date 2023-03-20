@@ -55,7 +55,7 @@ class MobileNetV1(nn.Module):
             nn.Conv2d(1024, 1024, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(1024),
             nn.ReLU(inplace=True),
-            nn.AvgPool2d(4)
+            nn.AvgPool2d(1)
         )
         self.classifier = nn.Linear(1024, num_classes)
 
