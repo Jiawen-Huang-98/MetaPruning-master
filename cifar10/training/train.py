@@ -90,7 +90,8 @@ def main():
 
 
 
-    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda step : (1.0-step/args.epochs), last_epoch=-1)
+    # scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda step : (1.0-step/args.epochs), last_epoch=-1)
+    scheduler = 1
     start_epoch = 0
     best_top1_acc= 0
     checkpoint_tar = os.path.join(args.save, 'checkpoint.pth.tar')
@@ -101,8 +102,8 @@ def main():
         best_top1_acc = checkpoint['best_top1_acc']
         model.load_state_dict(checkpoint['state_dict'])
         logging.info("loaded checkpoint {} epoch = {}" .format(checkpoint_tar, checkpoint['epoch']))
-    for epoch in range(start_epoch):
-        scheduler.step()
+    # for epoch in range(start_epoch):
+    #     scheduler.step()
 
     # Data loading code
     # traindir = os.path.join(args.data, 'train')
@@ -163,6 +164,14 @@ def main():
 
     epoch = start_epoch
     while epoch < args.epochs:
+      global scale_ids
+      scale_ids= np.random.randint(low = 0, high = len(channel_scale), size = 13)
+      # 调整学习率
+      if epoch != 0 and epoch % 15 == 0:
+          args.learning_rate /= 2
+          print(args.learning_rate)
+      for param_group in optimizer.param_groups:
+          param_group["lr"] = args.learning_rate
       train_obj, train_top1_acc,  train_top5_acc, epoch = train(epoch,  train_loader, model, criterion_smooth, optimizer, scheduler)
       valid_obj, valid_top1_acc, valid_top5_acc = validate(epoch, val_loader, model, criterion, args)
 
@@ -207,7 +216,7 @@ def train(epoch, train_loader, model, criterion, optimizer, scheduler):
 
       # compute output
       # 生成结构参数
-      scale_ids = np.random.randint(low=0, high=len(channel_scale), size=13)
+      # scale_ids = np.random.randint(low = 0, high = len(channel_scale), size = 13)
       logits = model(images, scale_ids)
       loss = criterion(logits, target)
 
@@ -222,12 +231,8 @@ def train(epoch, train_loader, model, criterion, optimizer, scheduler):
       optimizer.zero_grad()
       loss.backward()
       optimizer.step()
-      scheduler.step()
-      if epoch != 0 and epoch % 15 == 0:
-          args.learning_rate /= 2
-          print(args.learning_rate)
-      for param_group in optimizer.param_groups:
-          param_group["lr"] = args.learning_rate
+      # scheduler.step()
+
 
 
       # measure elapsed time
