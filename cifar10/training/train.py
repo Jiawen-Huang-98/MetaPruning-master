@@ -208,7 +208,7 @@ def train(epoch, train_loader, model, criterion, optimizer, scheduler):
     model.train()
     end = time.time()
 
-    print("lr of epoch:",scheduler.get_last_lr() )
+    # print("lr of epoch:",scheduler.get_last_lr() )
     for i, (images, target) in enumerate(train_loader):
       data_time.update(time.time() - end)
       images = images.cuda()
@@ -258,7 +258,7 @@ def validate(epoch, val_loader, model, criterion, args):
 
     model.eval()
 
-    scale_ids = np.random.randint(low=0, high=len(channel_scale), size=13)
+    # scale_ids = np.random.randint(low=0, high=len(channel_scale), size=13)
     with torch.no_grad():
         end = time.time()
         for i, (images, target) in enumerate(val_loader):
