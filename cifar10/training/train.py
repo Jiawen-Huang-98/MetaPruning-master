@@ -86,7 +86,7 @@ def main():
 
     #修改后的参数优化器
     optimizer = torch.optim.SGD(model.parameters(), args.learning_rate, momentum = args.momentum,
-                                weight_decay = args.weigth_decay, nesterov = True)  # 优化器
+                                weight_decay = args.weight_decay, nesterov = True)  # 优化器
 
 
 
